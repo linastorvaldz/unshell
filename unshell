@@ -190,9 +190,9 @@ decrypt_tpp() {
 		return 127
 	fi
 	shfmt -mn -w ./$filename.temp1.sh
-	sed '/<<EOF/,/EOF/d' ./$filename.temp1.sh > ./$filename.temp2.sh
+	sed '/<<EOF/,/EOF/d' ./$filename.temp1.sh >./$filename.temp2.sh
 	mv ./$filename.temp2.sh ./$filename.temp1.sh
-	sed 's/eval "\$/echo "\$/g' ./$filename.temp1.sh > ./$filename.temp2.sh
+	sed 's/eval "\$/echo "\$/g' ./$filename.temp1.sh >./$filename.temp2.sh
 	bash ./$filename.temp2.sh >./$filename.temp1.sh
 	rm ./$filename.temp2.sh
 }
@@ -243,6 +243,14 @@ decrypt_eval_base64() {
 	rm ./$filename.temp2.sh
 }
 
+# "kenapa kesini? mau liat isi kode modul putraxitersz ya?"
+# Ya dong puki lu kira ngapain cok?
+decrypt_putraxitersz() {
+	sed 's/.gz" -c | sh/\.gz" -c/g; s|/data/local/tmp/|./|g' ./$filename.temp1.sh >./$filename.temp2.sh
+	bash ./$filename.temp2.sh >./$filename.temp1.sh
+	rm ./$filename.temp2.sh
+}
+
 init_dec() {
 	[ $VERBOSE -eq 1 ] && set -x
 	while true; do
@@ -287,6 +295,11 @@ init_dec() {
 			counter=$((counter + 1))
 			echo "Layer $counter: base64"
 			decrypt_base64
+			PASSED_LOOP=1
+		elif grep -q 'modul putraxitersz' ./$filename.temp1.sh; then
+			counter=$((counter + 1))
+			echo "Layer $counter: putraxitersz"
+			decrypt_putraxitersz
 			PASSED_LOOP=1
 		elif [ $(grep -c '^#' ./$filename.temp1.sh) -gt 180 ]; then
 			counter=$((counter + 1))
